@@ -1,8 +1,3 @@
-// ===================================================================
-// PROVIDERS LAYER - Riverpod State Management
-// ===================================================================
-
-// features/products/presentation/providers/products_providers.dart
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/datasources/products_remote_datasource.dart';
@@ -21,7 +16,9 @@ import '../../../../core/errors/app_exception.dart';
 // DATA LAYER PROVIDERS
 // =============================================================================
 
-final productsRemoteDataSourceProvider = Provider<ProductsRemoteDataSource>((ref) {
+final productsRemoteDataSourceProvider = Provider<ProductsRemoteDataSource>((
+  ref,
+) {
   return ProductsRemoteDataSourceImpl(ref.read(apiClientProvider));
 });
 
@@ -64,7 +61,10 @@ final productsListProvider = FutureProvider<List<Product>>((ref) async {
 });
 
 // Dettaglio prodotto per ID
-final productDetailProvider = FutureProvider.family<Product, int>((ref, productId) async {
+final productDetailProvider = FutureProvider.family<Product, int>((
+  ref,
+  productId,
+) async {
   final getProductDetail = ref.read(getProductDetailUseCaseProvider);
   return await getProductDetail.call(productId);
 });
@@ -73,7 +73,9 @@ final productDetailProvider = FutureProvider.family<Product, int>((ref, productI
 final productsRefreshProvider = StateProvider<int>((ref) => 0);
 
 // Lista prodotti che si refresh quando cambia productsRefreshProvider
-final refreshableProductsListProvider = FutureProvider<List<Product>>((ref) async {
+final refreshableProductsListProvider = FutureProvider<List<Product>>((
+  ref,
+) async {
   // Watching per auto-refresh
   ref.watch(productsRefreshProvider);
 
@@ -135,7 +137,11 @@ class ProductFormNotifier extends StateNotifier<ProductFormState> {
   ) : super(ProductFormState());
 
   Future<void> createProduct(Product product) async {
-    state = state.copyWith(isLoading: true, generalError: null, fieldErrors: {});
+    state = state.copyWith(
+      isLoading: true,
+      generalError: null,
+      fieldErrors: {},
+    );
 
     try {
       await _createProduct.call(product);
@@ -143,7 +149,6 @@ class ProductFormNotifier extends StateNotifier<ProductFormState> {
 
       // Refresh della lista prodotti
       _ref.read(productsRefreshProvider.notifier).state++;
-
     } on ValidationException catch (e) {
       state = state.copyWith(
         isLoading: false,
@@ -151,10 +156,7 @@ class ProductFormNotifier extends StateNotifier<ProductFormState> {
         fieldErrors: e.firstErrorPerField,
       );
     } on AppException catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        generalError: e.message,
-      );
+      state = state.copyWith(isLoading: false, generalError: e.message);
     } catch (e) {
       state = state.copyWith(
         isLoading: false,
@@ -164,7 +166,11 @@ class ProductFormNotifier extends StateNotifier<ProductFormState> {
   }
 
   Future<void> updateProduct(Product product) async {
-    state = state.copyWith(isLoading: true, generalError: null, fieldErrors: {});
+    state = state.copyWith(
+      isLoading: true,
+      generalError: null,
+      fieldErrors: {},
+    );
 
     try {
       await _updateProduct.call(product);
@@ -175,7 +181,6 @@ class ProductFormNotifier extends StateNotifier<ProductFormState> {
 
       // Invalida anche il dettaglio specifico
       _ref.invalidate(productDetailProvider(product.id));
-
     } on ValidationException catch (e) {
       state = state.copyWith(
         isLoading: false,
@@ -183,10 +188,7 @@ class ProductFormNotifier extends StateNotifier<ProductFormState> {
         fieldErrors: e.firstErrorPerField,
       );
     } on AppException catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        generalError: e.message,
-      );
+      state = state.copyWith(isLoading: false, generalError: e.message);
     } catch (e) {
       state = state.copyWith(
         isLoading: false,
@@ -204,12 +206,8 @@ class ProductFormNotifier extends StateNotifier<ProductFormState> {
 
       // Refresh della lista prodotti
       _ref.read(productsRefreshProvider.notifier).state++;
-
     } on AppException catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        generalError: e.message,
-      );
+      state = state.copyWith(isLoading: false, generalError: e.message);
     } catch (e) {
       state = state.copyWith(
         isLoading: false,
@@ -224,11 +222,12 @@ class ProductFormNotifier extends StateNotifier<ProductFormState> {
 }
 
 // Provider per il form notifier
-final productFormProvider = StateNotifierProvider<ProductFormNotifier, ProductFormState>((ref) {
-  return ProductFormNotifier(
-    ref.read(createProductUseCaseProvider),
-    ref.read(updateProductUseCaseProvider),
-    ref.read(deleteProductUseCaseProvider),
-    ref,
-  );
-});
+final productFormProvider =
+    StateNotifierProvider<ProductFormNotifier, ProductFormState>((ref) {
+      return ProductFormNotifier(
+        ref.read(createProductUseCaseProvider),
+        ref.read(updateProductUseCaseProvider),
+        ref.read(deleteProductUseCaseProvider),
+        ref,
+      );
+    });
