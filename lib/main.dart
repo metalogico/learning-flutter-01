@@ -1,26 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'screens/product_list_screen.dart';
 
-import 'config/app_config.dart';
-import 'app/app.dart';
-import 'core/providers/core_providers.dart';
+void main() {
+  runApp(const ProviderScope(child: MyApp()));
+}
 
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
-  // SharedPreferences initialization
-  final sharedPreferences = await SharedPreferences.getInstance();
-
-  // Log configuration
-  AppConfig.logConfig();
-
-  runApp(
-    ProviderScope(
-      overrides: [
-        sharedPreferencesProvider.overrideWithValue(sharedPreferences),
-      ],
-      child: MyApp(),
-    ),
-  );
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Product App',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+        visualDensity: VisualDensity.adaptivePlatformDensity,
+      ),
+      home: const ProductListScreen(),
+    );
+  }
 }
