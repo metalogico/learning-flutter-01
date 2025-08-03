@@ -1,11 +1,12 @@
-import '../models/product_model.dart';
+import 'package:flutter_app_01/features/products/domain/entities/product.dart';
+
 import '../../../../core/datasources/base_remote_datasource.dart';
 
 abstract class ProductsRemoteDataSource {
-  Future<List<ProductModel>> getProducts();
-  Future<ProductModel> getProductById(int id);
-  Future<ProductModel> createProduct(ProductModel product);
-  Future<ProductModel> updateProduct(ProductModel product);
+  Future<List<Product>> getProducts();
+  Future<Product> getProductById(int id);
+  Future<Product> createProduct(Product product);
+  Future<Product> updateProduct(Product product);
   Future<void> deleteProduct(int id);
 }
 
@@ -14,42 +15,37 @@ class ProductsRemoteDataSourceImpl extends BaseRemoteDataSource
   ProductsRemoteDataSourceImpl(super.apiClient);
 
   @override
-  Future<List<ProductModel>> getProducts() async {
+  Future<List<Product>> getProducts() async {
     return handleRequest(apiClient.get('/products'), (responseData) {
       final items = responseData['products'] as List;
       return items
-          .map((json) => ProductModel.fromJson(json as Map<String, dynamic>))
+          .map((json) => Product.fromJson(json as Map<String, dynamic>))
           .toList();
     });
   }
 
   @override
-  Future<ProductModel> getProductById(int id) async {
+  Future<Product> getProductById(int id) async {
     return handleRequest(apiClient.get('/products/$id'), (responseData) {
-
-      // ← Aggiungi queste 2 righe per debug
-      print("=== RESPONSE DATA ===");
-      print(responseData);
-
-      return ProductModel.fromJson(responseData as Map<String, dynamic>);
+      return Product.fromJson(responseData as Map<String, dynamic>);
     });
   }
 
   @override
-  Future<ProductModel> createProduct(ProductModel product) async {
+  Future<Product> createProduct(Product product) async {
     return handleRequest(apiClient.post('/products', data: product.toJson()), (
       responseData,
     ) {
-      return ProductModel.fromJson(responseData as Map<String, dynamic>);
+      return Product.fromJson(responseData as Map<String, dynamic>);
     });
   }
 
   @override
-  Future<ProductModel> updateProduct(ProductModel product) async {
+  Future<Product> updateProduct(Product product) async {
     return handleRequest(
       apiClient.put('/products/${product.id}', data: product.toJson()),
       (responseData) {
-        return ProductModel.fromJson(responseData as Map<String, dynamic>);
+        return Product.fromJson(responseData as Map<String, dynamic>);
       },
     );
   }
