@@ -26,6 +26,11 @@ class ProductsRemoteDataSourceImpl extends BaseRemoteDataSource
   @override
   Future<ProductModel> getProductById(int id) async {
     return handleRequest(apiClient.get('/products/$id'), (responseData) {
+
+      // ← Aggiungi queste 2 righe per debug
+      print("=== RESPONSE DATA ===");
+      print(responseData);
+
       return ProductModel.fromJson(responseData as Map<String, dynamic>);
     });
   }

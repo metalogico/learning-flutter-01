@@ -5,20 +5,28 @@ class ProductModel extends Product {
     required super.id,
     required super.name,
     required super.price,
+    required super.rating,
     required super.description,
     required super.category,
     required super.thumbnail,
+    required super.brand,
+    required super.sku,
+    required super.stock,
   });
 
   // FROM JSON - Laravel API Response
   factory ProductModel.fromJson(Map<String, dynamic> json) {
     return ProductModel(
-      id: json['id'] as int,
-      name: json['title'] as String,        // title → name
+      id: json['id'].toInt(),
+      name: json['title'].toString(),
       price: (json['price'] as num).toDouble(),
-      description: json['description'] as String,
-      category: json['category'] as String,  // Nuovo campo
-      thumbnail: json['thumbnail'] as String, // Aggiunto thumbnail
+      rating: (json['rating'] as num).toDouble(),
+      description: json['description'].toString(),
+      category: json['category'].toString(),
+      thumbnail: json['thumbnail'].toString(),
+      brand: json['brand'].toString(),
+      sku: json['sku'].toString(),
+      stock: (json['stock'] as num).toInt(),
     );
   }
 
@@ -27,9 +35,13 @@ class ProductModel extends Product {
     return {
       'name': name,
       'price': price,
+      'rating': rating,
       'description': description,
       'category': category,
       'thumbnail': thumbnail,
+      'brand': brand,
+      'sku': sku,
+      'stock': stock,
     };
   }
 
@@ -39,9 +51,13 @@ class ProductModel extends Product {
       id: product.id,
       name: product.name,
       price: product.price,
+      rating: product.rating,
       description: product.description,
       category: product.category,
       thumbnail: product.thumbnail,
+      brand: product.brand,
+      sku: product.sku,
+      stock: product.stock,
     );
   }
 

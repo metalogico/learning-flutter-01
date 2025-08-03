@@ -61,10 +61,7 @@ final productsListProvider = FutureProvider<List<Product>>((ref) async {
 });
 
 // Dettaglio prodotto per ID
-final productDetailProvider = FutureProvider.family<Product, int>((
-  ref,
-  productId,
-) async {
+final productDetailProvider = FutureProvider.family<Product, int>((ref, productId) async {
   final getProductDetail = ref.read(getProductDetailUseCaseProvider);
   return await getProductDetail.call(productId);
 });
@@ -73,9 +70,7 @@ final productDetailProvider = FutureProvider.family<Product, int>((
 final productsRefreshProvider = StateProvider<int>((ref) => 0);
 
 // Lista prodotti che si refresh quando cambia productsRefreshProvider
-final refreshableProductsListProvider = FutureProvider<List<Product>>((
-  ref,
-) async {
+final refreshableProductsListProvider = FutureProvider<List<Product>>((ref) async {
   // Watching per auto-refresh
   ref.watch(productsRefreshProvider);
 
