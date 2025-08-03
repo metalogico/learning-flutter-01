@@ -6,6 +6,7 @@ class Product extends Equatable {
   final double price;
   final String description;
   final String category;
+  final String thumbnail;
 
   const Product({
     required this.id,
@@ -13,6 +14,7 @@ class Product extends Equatable {
     required this.price,
     required this.description,
     required this.category,
+    required this.thumbnail,
   });
 
   // Business Logic Methods
@@ -26,7 +28,7 @@ class Product extends Equatable {
 
   // Equatable gestisce automaticamente == e hashCode
   @override
-  List<Object?> get props => [id, name, price, description, category];
+  List<Object?> get props => [id, name, price, description, category, thumbnail];
 
   // Cambia business logic:
   bool get isPopular => category == 'smartphones' || category == 'laptops';
@@ -41,6 +43,7 @@ class Product extends Equatable {
     double? price,
     String? description,
     String? category,
+    String? thumbnail,
   }) {
     return Product(
       id: id ?? this.id,
@@ -48,6 +51,7 @@ class Product extends Equatable {
       price: price ?? this.price,
       description: description ?? this.description,
       category: category ?? this.category,
+      thumbnail: thumbnail ?? this.thumbnail,
     );
   }
 }

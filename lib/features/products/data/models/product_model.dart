@@ -7,6 +7,7 @@ class ProductModel extends Product {
     required super.price,
     required super.description,
     required super.category,
+    required super.thumbnail,
   });
 
   // FROM JSON - Laravel API Response
@@ -17,6 +18,7 @@ class ProductModel extends Product {
       price: (json['price'] as num).toDouble(),
       description: json['description'] as String,
       category: json['category'] as String,  // Nuovo campo
+      thumbnail: json['thumbnail'] as String, // Aggiunto thumbnail
     );
   }
 
@@ -27,6 +29,7 @@ class ProductModel extends Product {
       'price': price,
       'description': description,
       'category': category,
+      'thumbnail': thumbnail,
     };
   }
 
@@ -38,6 +41,7 @@ class ProductModel extends Product {
       price: product.price,
       description: product.description,
       category: product.category,
+      thumbnail: product.thumbnail,
     );
   }
 
