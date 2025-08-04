@@ -26,8 +26,7 @@ final secureStorageProvider = Provider<SecureStorage>((ref) {
 
 final localStorageProvider = Provider<LocalStorage>((ref) {
   final sharedPrefs = ref.read(sharedPreferencesProvider);
-  final secureStorage = ref.read(secureStorageProvider);
-  return LocalStorage(sharedPrefs, secureStorage);
+  return LocalStorage(sharedPrefs);
 });
 
 final apiClientProvider = Provider<ApiClient>((ref) {

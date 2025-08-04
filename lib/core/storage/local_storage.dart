@@ -1,27 +1,40 @@
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../features/auth/domain/entities/user.dart';
-import 'secure_storage.dart';
 
 class LocalStorage {
+  static const String _tokenKey = 'auth_access_token';
+  static const String _refreshTokenKey = 'auth_refresh_token';
   static const String _userKey = 'user_data';
   
   final SharedPreferences _prefs;
-  final SecureStorage _secureStorage;
   
-  LocalStorage(this._prefs, this._secureStorage);
+  LocalStorage(this._prefs);
   
   // Auth Token Methods
   Future<void> saveToken(String accessToken) async {
-    await _secureStorage.saveAccessToken(accessToken);
+    await _prefs.setString(_tokenKey, accessToken);
   }
   
-  Future<String?> getToken() async {
-    return await _secureStorage.getAccessToken();
+  String? getToken() {
+    return _prefs.getString(_tokenKey);
   }
   
   Future<void> removeToken() async {
-    await _secureStorage.removeAccessToken();
+    await _prefs.remove(_tokenKey);
+  }
+
+  // Refresh Token Methods
+  Future<void> saveRefreshToken(String refreshToken) async {
+    await _prefs.setString(_refreshTokenKey, refreshToken);
+  }
+  
+  String? getRefreshToken() {
+    return _prefs.getString(_refreshTokenKey);
+  }
+  
+  Future<void> removeRefreshToken() async {
+    await _prefs.remove(_refreshTokenKey);
   }
   
   // User Data Methods
@@ -48,14 +61,16 @@ class LocalStorage {
   }
   
   // Auth Status Check
-  Future<bool> get hasToken async => (await getToken()) != null;
+  bool get hasToken => getToken() != null;
+  bool get hasRefreshToken => getRefreshToken() != null;
   bool get hasUser => getUser() != null;
-  Future<bool> get isAuthenticated async => (await hasToken) && hasUser;
+  bool get isAuthenticated => hasToken && hasRefreshToken && hasUser;
   
   // Clear all auth data
   Future<void> clearAuthData() async {
     await Future.wait([
       removeToken(),
+      removeRefreshToken(),
       removeUser(),
     ]);
   }

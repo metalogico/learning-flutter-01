@@ -18,6 +18,21 @@ class AuthRepositoryImpl implements AuthRepository {
     await Future.wait([
       localStorage.saveToken(authToken.accessToken),
       localStorage.saveUser(authToken.user),
+      localStorage.saveRefreshToken(authToken.refreshToken),
+    ]);
+    
+    return authToken;
+  }
+
+  @override
+  Future<AuthToken> refreshToken(String refreshToken) async {
+    final authToken = await remoteDataSource.refreshToken(refreshToken);
+    
+    // Salva i nuovi token e user aggiornato
+    await Future.wait([
+      localStorage.saveToken(authToken.accessToken),
+      localStorage.saveUser(authToken.user),
+      localStorage.saveRefreshToken(authToken.refreshToken),
     ]);
     
     return authToken;

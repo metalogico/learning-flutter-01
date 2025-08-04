@@ -5,6 +5,7 @@ import '../../data/repositories/auth_repository_impl.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../../domain/usecases/login_case.dart';
 import '../../domain/usecases/logout_case.dart';
+import '../../domain/usecases/refresh_token_case.dart';
 import '../../domain/entities/user.dart';
 import '../../../../core/providers/core_providers.dart';
 
@@ -23,6 +24,10 @@ final loginUseCaseProvider = Provider<LoginCase>((ref) {
 
 final logoutUseCaseProvider = Provider<LogoutCase>((ref) {
   return LogoutCase(ref.read(authRepositoryProvider));
+});
+
+final refreshTokenUseCaseProvider = Provider<RefreshTokenCase>((ref) {
+  return RefreshTokenCase(ref.read(authRepositoryProvider));
 });
 
 // =============================================================================

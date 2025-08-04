@@ -6,6 +6,7 @@ abstract class AuthRemoteDataSource {
   Future<AuthToken> login(String email, String password);
   Future<void> logout();
   Future<User> getCurrentUser();
+  Future<AuthToken> refreshToken(String refreshToken);
 }
 
 class AuthRemoteDataSourceImpl extends BaseRemoteDataSource
@@ -18,6 +19,18 @@ class AuthRemoteDataSourceImpl extends BaseRemoteDataSource
       apiClient.post('/auth/login', data: {
         'email': email,
         'password': password,
+      }),
+      (responseData) {
+        return AuthToken.fromJson(responseData as Map<String, dynamic>);
+      },
+    );
+  }
+
+  @override
+  Future<AuthToken> refreshToken(String refreshToken) async {
+    return handleRequest(
+      apiClient.post('/auth/refresh', data: {
+        'refresh_token': refreshToken,
       }),
       (responseData) {
         return AuthToken.fromJson(responseData as Map<String, dynamic>);
