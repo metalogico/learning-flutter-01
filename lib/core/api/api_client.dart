@@ -30,10 +30,10 @@ class ApiClient {
 
     // Interceptor per gestione automatica del token
     _dio.interceptors.add(InterceptorsWrapper(
-      onRequest: (options, handler) {
+      onRequest: (options, handler) async {
         // Aggiungi automaticamente il Bearer token se disponibile
         if (_localStorage != null) {
-          final token = _localStorage.getToken();
+          final token = await _localStorage.getToken();
           if (token != null) {
             options.headers['Authorization'] = 'Bearer $token';
           }

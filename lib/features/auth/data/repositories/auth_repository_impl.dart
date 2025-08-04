@@ -43,7 +43,7 @@ class AuthRepositoryImpl implements AuthRepository {
     }
     
     // Se non c'è in cache, prova a recuperarlo dal server
-    if (localStorage.hasToken) {
+    if (await localStorage.hasToken) {
       final user = await remoteDataSource.getCurrentUser();
       await localStorage.saveUser(user);
       return user;
@@ -54,7 +54,7 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Future<bool> isAuthenticated() async {
-    if (!localStorage.isAuthenticated) {
+    if (!(await localStorage.isAuthenticated)) {
       return false;
     }
     

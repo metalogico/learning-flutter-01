@@ -1,26 +1,27 @@
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../features/auth/domain/entities/user.dart';
+import 'secure_storage.dart';
 
 class LocalStorage {
-  static const String _tokenKey = 'auth_access_token';
   static const String _userKey = 'user_data';
   
   final SharedPreferences _prefs;
+  final SecureStorage _secureStorage;
   
-  LocalStorage(this._prefs);
+  LocalStorage(this._prefs, this._secureStorage);
   
   // Auth Token Methods
   Future<void> saveToken(String accessToken) async {
-    await _prefs.setString(_tokenKey, accessToken);
+    await _secureStorage.saveAccessToken(accessToken);
   }
   
-  String? getToken() {
-    return _prefs.getString(_tokenKey);
+  Future<String?> getToken() async {
+    return await _secureStorage.getAccessToken();
   }
   
   Future<void> removeToken() async {
-    await _prefs.remove(_tokenKey);
+    await _secureStorage.removeAccessToken();
   }
   
   // User Data Methods
@@ -47,9 +48,9 @@ class LocalStorage {
   }
   
   // Auth Status Check
-  bool get hasToken => getToken() != null;
+  Future<bool> get hasToken async => (await getToken()) != null;
   bool get hasUser => getUser() != null;
-  bool get isAuthenticated => hasToken && hasUser;
+  Future<bool> get isAuthenticated async => (await hasToken) && hasUser;
   
   // Clear all auth data
   Future<void> clearAuthData() async {
