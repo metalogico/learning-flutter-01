@@ -1,5 +1,4 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
 import '../../data/datasources/auth_remote_datasource.dart';
 import '../../data/repositories/auth_repository_impl.dart';
 import '../../domain/repositories/auth_repository.dart';
@@ -8,100 +7,61 @@ import '../../domain/usecases/logout_case.dart';
 import '../../domain/entities/user.dart';
 import '../../../../core/providers/core_providers.dart';
 
-// =============================================================================
-// CORE PROVIDERS
-// =============================================================================
-
+// Solo il repository provider
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
   final dataSource = AuthRemoteDataSourceImpl(ref.read(apiClientProvider));
-  return AuthRepositoryImpl(dataSource, ref.read(localStorageProvider));
+  return AuthRepositoryImpl(
+    dataSource, 
+    ref.read(localStorageProvider),
+    ref.read(secureStorageProvider),
+  );
 });
 
-final loginUseCaseProvider = Provider<LoginCase>((ref) {
-  return LoginCase(ref.read(authRepositoryProvider));
-});
-
-final logoutUseCaseProvider = Provider<LogoutCase>((ref) {
-  return LogoutCase(ref.read(authRepositoryProvider));
-});
-
-// =============================================================================
-// AUTH STATE
-// =============================================================================
-
-enum AuthStatus { loading, authenticated, unauthenticated, error }
-
+// Stato semplificato: solo user e loading per UI
 class AuthState {
-  final AuthStatus status;
   final User? user;
-  final String? error;
+  final bool isLoading;
 
-  const AuthState({
-    this.status = AuthStatus.unauthenticated,
-    this.user,
-    this.error,
-  });
+  const AuthState({this.user, this.isLoading = false});
 
-  AuthState copyWith({AuthStatus? status, User? user, String? error}) {
+  AuthState copyWith({User? user, bool? isLoading}) {
     return AuthState(
-      status: status ?? this.status,
       user: user ?? this.user,
-      error: error ?? this.error,
+      isLoading: isLoading ?? this.isLoading,
     );
   }
 
-  bool get isAuthenticated => status == AuthStatus.authenticated && user != null;
-  bool get isLoading => status == AuthStatus.loading;
+  bool get isAuthenticated => user != null;
 }
 
 class AuthNotifier extends StateNotifier<AuthState> {
-  final LoginCase _loginCase;
-  final LogoutCase _logoutCase;
   final AuthRepository _repository;
+  late final LoginCase _loginCase;
+  late final LogoutCase _logoutCase;
 
-  AuthNotifier(this._loginCase, this._logoutCase, this._repository) 
-      : super(const AuthState()) {
-    _checkAuthStatus();
-  }
-
-  Future<void> _checkAuthStatus() async {
-    final isAuth = await _repository.isAuthenticated();
-    if (isAuth) {
-      final user = await _repository.getCurrentUser();
-      state = state.copyWith(status: AuthStatus.authenticated, user: user);
-    }
+  AuthNotifier(this._repository) : super(const AuthState()) {
+    _loginCase = LoginCase(_repository);
+    _logoutCase = LogoutCase(_repository);
   }
 
   Future<void> login(String email, String password) async {
-    state = state.copyWith(status: AuthStatus.loading, error: null);
+    state = state.copyWith(isLoading: true);
     
     try {
       final authToken = await _loginCase.call(email, password);
-      state = state.copyWith(
-        status: AuthStatus.authenticated, 
-        user: authToken.user,
-      );
+      state = AuthState(user: authToken.user);
     } catch (e) {
-      state = state.copyWith(
-        status: AuthStatus.error, 
-        error: e.toString(),
-      );
+      state = const AuthState();
+      rethrow; // Lascia che la UI gestisca l'errore
     }
   }
 
   Future<void> logout() async {
     await _logoutCase.call();
-    state = state.copyWith(
-      status: AuthStatus.unauthenticated, 
-      user: null,
-    );
+    state = const AuthState();
   }
 }
 
 final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
-  return AuthNotifier(
-    ref.read(loginUseCaseProvider),
-    ref.read(logoutUseCaseProvider),
-    ref.read(authRepositoryProvider),
-  );
+  return AuthNotifier(ref.read(authRepositoryProvider));
 });

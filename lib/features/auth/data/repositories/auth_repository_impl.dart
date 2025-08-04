@@ -3,22 +3,23 @@ import '../../domain/entities/auth_token.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../datasources/auth_remote_datasource.dart';
 import '../../../../core/storage/local_storage.dart';
+import '../../../../core/storage/secure_storage.dart';
 
 class AuthRepositoryImpl implements AuthRepository {
   final AuthRemoteDataSource remoteDataSource;
   final LocalStorage localStorage;
+  final SecureStorage secureStorage;
 
-  AuthRepositoryImpl(this.remoteDataSource, this.localStorage);
+  AuthRepositoryImpl(this.remoteDataSource, this.localStorage, this.secureStorage);
 
   @override
   Future<AuthToken> login(String email, String password) async {
     final authToken = await remoteDataSource.login(email, password);
     
-    // Salva access_token e user in locale
     await Future.wait([
-      localStorage.saveToken(authToken.accessToken),
+      secureStorage.saveAccessToken(authToken.accessToken),
+      secureStorage.saveRefreshToken(authToken.refreshToken),
       localStorage.saveUser(authToken.user),
-      localStorage.saveRefreshToken(authToken.refreshToken),
     ]);
     
     return authToken;
@@ -31,20 +32,18 @@ class AuthRepositoryImpl implements AuthRepository {
     } catch (e) {
       // Anche se il logout remoto fallisce, pulisci i dati locali
     } finally {
-      await localStorage.clearAuthData();
+      await _clearAllAuthData();
     }
   }
 
   @override
   Future<User> getCurrentUser() async {
-    // Prima controlla se abbiamo l'utente in cache locale
     final cachedUser = localStorage.getUser();
     if (cachedUser != null) {
       return cachedUser;
     }
     
-    // Se non c'è in cache, prova a recuperarlo dal server
-    if (localStorage.hasToken) {
+    if (await secureStorage.hasAccessToken()) {
       final user = await remoteDataSource.getCurrentUser();
       await localStorage.saveUser(user);
       return user;
@@ -55,7 +54,7 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Future<bool> isAuthenticated() async {
-    if (!(localStorage.isAuthenticated)) {
+    if (!await _hasCompleteAuthData()) {
       return false;
     }
     
@@ -65,5 +64,17 @@ class AuthRepositoryImpl implements AuthRepository {
     } catch (e) {
       return false;
     }
+  }
+
+  // Helper methods privati
+  Future<bool> _hasCompleteAuthData() async {
+    return await secureStorage.hasTokens() && localStorage.hasUser;
+  }
+
+  Future<void> _clearAllAuthData() async {
+    await Future.wait([
+      secureStorage.clearTokens(),
+      localStorage.clearUserData(),
+    ]);
   }
 }

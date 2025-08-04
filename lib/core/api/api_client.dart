@@ -1,13 +1,13 @@
 import 'package:dio/dio.dart';
 import '../../config/app_config.dart';
-import '../storage/local_storage.dart';
+import '../storage/secure_storage.dart';
 
 class ApiClient {
   late Dio _dio;
-  final LocalStorage? _localStorage;
+  final SecureStorage? _secureStorage;
   bool _isRefreshing = false;
 
-  ApiClient([this._localStorage]) {
+  ApiClient([this._secureStorage]) {
     _dio = Dio(BaseOptions(
       baseUrl: AppConfig.baseUrl,
       connectTimeout: Duration(milliseconds: AppConfig.connectTimeout),
@@ -18,7 +18,6 @@ class ApiClient {
       },
     ));
 
-    // Debug logging solo in development
     if (AppConfig.debugMode) {
       _dio.interceptors.add(LogInterceptor(
         requestBody: true,
@@ -29,12 +28,10 @@ class ApiClient {
       ));
     }
 
-    // Interceptor per gestione automatica del token e refresh
     _dio.interceptors.add(InterceptorsWrapper(
-      onRequest: (options, handler) {
-        // Aggiungi automaticamente il Bearer token se disponibile
-        if (_localStorage != null) {
-          final token = _localStorage.getToken();
+      onRequest: (options, handler) async {
+        if (_secureStorage != null) {
+          final token = await _secureStorage.getAccessToken();
           if (token != null) {
             options.headers['Authorization'] = 'Bearer $token';
           }
@@ -42,27 +39,23 @@ class ApiClient {
         handler.next(options);
       },
       onError: (error, handler) async {
-        // Se è un errore 401 e abbiamo un refresh token, prova il refresh
         if (error.response?.statusCode == 401 && 
-            _localStorage != null && 
-            _localStorage.hasRefreshToken &&
+            _secureStorage != null && 
+            await _secureStorage.hasRefreshToken() &&
             !_isRefreshing) {
           
           try {
             _isRefreshing = true;
             
-            // Prova il refresh
-            final refreshToken = _localStorage.getRefreshToken()!;
+            final refreshToken = await _secureStorage.getRefreshToken();
             final refreshResponse = await _dio.post('/auth/refresh', data: {
-              'refresh_token': refreshToken,
+              'refresh_token': refreshToken!,
             });
             
-            // Salva i nuovi token
             final responseData = refreshResponse.data;
-            await _localStorage.saveToken(responseData['access_token']);
-            await _localStorage.saveRefreshToken(responseData['refresh_token']);
+            await _secureStorage.saveAccessToken(responseData['access_token']);
+            await _secureStorage.saveRefreshToken(responseData['refresh_token']);
             
-            // Riprova la chiamata originale con il nuovo token
             final originalRequest = error.requestOptions;
             originalRequest.headers['Authorization'] = 'Bearer ${responseData['access_token']}';
             
@@ -70,17 +63,15 @@ class ApiClient {
             handler.resolve(retryResponse);
             
           } catch (refreshError) {
-            // Il refresh è fallito, pulisci i dati e passa l'errore originale
-            _localStorage.clearAuthData();
+            await _secureStorage.clearTokens();
             handler.next(error);
           } finally {
             _isRefreshing = false;
           }
           
         } else {
-          // Non è un 401 o non abbiamo refresh token
           if (error.response?.statusCode == 401) {
-            _localStorage?.clearAuthData();
+            _secureStorage?.clearTokens();
           }
           handler.next(error);
         }

@@ -53,18 +53,44 @@ class _AuthTestPageState extends ConsumerState<AuthTestPage> {
             ),
             SizedBox(height: 20),
             ElevatedButton(
-              onPressed: authState.isLoading
-                  ? null
-                  : () {
-                      ref.read(authProvider.notifier).login(
-                            _emailController.text,
-                            _passwordController.text,
-                          );
-                    },
-              child: authState.isLoading
-                  ? CircularProgressIndicator(color: Colors.white)
-                  : Text('LOGIN'),
+              onPressed: authState.isLoading ? null : () async {
+                try {
+                  await ref.read(authProvider.notifier).login(
+                    _emailController.text,
+                    _passwordController.text,
+                  );
+                } catch (e) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(e.toString()),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              },
+              child: authState.isLoading 
+                ? CircularProgressIndicator(color: Colors.white)
+                : Text('LOGIN'),
             ),
+            if (authState.isAuthenticated) ...[
+              SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: authState.isLoading ? null : () async {
+                  try {
+                    await ref.read(authProvider.notifier).logout();
+                  } catch (e) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Logout error: ${e.toString()}'),
+                        backgroundColor: Colors.orange,
+                      ),
+                    );
+                  }
+                },
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                child: Text('LOGOUT'),
+              ),
+            ],
             SizedBox(height: 20),
             Center(
               child: Text(
@@ -76,12 +102,21 @@ class _AuthTestPageState extends ConsumerState<AuthTestPage> {
                 ),
               ),
             ),
-            if (authState.error != null) ...[
-              SizedBox(height: 10),
-              Text(
-                'Error: ${authState.error}',
-                style: TextStyle(color: Colors.red),
-                textAlign: TextAlign.center,
+            if (authState.user != null) ...[
+              SizedBox(height: 16),
+              Card(
+                child: Padding(
+                  padding: EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('User Info:', style: TextStyle(fontWeight: FontWeight.bold)),
+                      SizedBox(height: 8),
+                      Text('Name: ${authState.user!.name}'),
+                      Text('Email: ${authState.user!.email}'),
+                    ],
+                  ),
+                ),
               ),
             ],
           ],

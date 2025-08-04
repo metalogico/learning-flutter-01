@@ -30,6 +30,6 @@ final localStorageProvider = Provider<LocalStorage>((ref) {
 });
 
 final apiClientProvider = Provider<ApiClient>((ref) {
-  final localStorage = ref.read(localStorageProvider);
-  return ApiClient(localStorage);
+  final secureStorage = ref.read(secureStorageProvider);
+  return ApiClient(secureStorage);
 });

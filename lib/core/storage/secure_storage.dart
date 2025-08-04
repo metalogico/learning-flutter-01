@@ -40,6 +40,15 @@ class SecureStorage {
     return token != null && token.isNotEmpty;
   }
   
+  Future<bool> hasRefreshToken() async {
+    final token = await getRefreshToken();
+    return token != null && token.isNotEmpty;
+  }
+  
+  Future<bool> hasTokens() async {
+    return await hasAccessToken() && await hasRefreshToken();
+  }
+  
   Future<void> clearTokens() async {
     await Future.wait([
       removeAccessToken(),
