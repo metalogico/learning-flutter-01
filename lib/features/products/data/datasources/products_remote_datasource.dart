@@ -43,7 +43,7 @@ class ProductsRemoteDataSourceImpl extends BaseRemoteDataSource
   @override
   Future<Product> updateProduct(Product product) async {
     return handleRequest(
-      apiClient.put('/products/${product.id}', data: product.toJson()),
+      apiClient.patch('/products/${product.id}', data: product.toJson()),
       (responseData) {
         return Product.fromJson(responseData as Map<String, dynamic>);
       },

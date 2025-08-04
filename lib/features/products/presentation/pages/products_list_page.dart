@@ -12,7 +12,7 @@ class ProductsListPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final productsAsync = ref.watch(refreshableProductsListProvider);
+    final productsAsync = ref.watch(productsListProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -61,7 +61,7 @@ class ProductsListPage extends ConsumerWidget {
           return RefreshIndicator(
             onRefresh: () async {
               ref.read(productsRefreshProvider.notifier).state++;
-              return ref.read(refreshableProductsListProvider.future);
+              return ref.read(productsListProvider.future);
             },
             child: ListView.builder(
               padding: EdgeInsets.all(16),

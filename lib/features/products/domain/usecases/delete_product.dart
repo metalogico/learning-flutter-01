@@ -1,9 +1,9 @@
 import '../repositories/products_repository.dart';
 
-class DeleteProduct {
+class DeleteProductCase {
   final ProductsRepository repository;
 
-  DeleteProduct(this.repository);
+  DeleteProductCase(this.repository);
 
   Future<void> call(int productId) async {
     if (productId <= 0) {

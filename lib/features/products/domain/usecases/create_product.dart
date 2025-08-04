@@ -1,10 +1,10 @@
 import '../entities/product.dart';
 import '../repositories/products_repository.dart';
 
-class CreateProduct {
+class CreateProductCase {
   final ProductsRepository repository;
 
-  CreateProduct(this.repository);
+  CreateProductCase(this.repository);
 
   Future<Product> call(Product product) async {
     // Validation business rules
