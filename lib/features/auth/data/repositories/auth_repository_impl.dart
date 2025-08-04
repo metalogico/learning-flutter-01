@@ -25,20 +25,6 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<AuthToken> refreshToken(String refreshToken) async {
-    final authToken = await remoteDataSource.refreshToken(refreshToken);
-    
-    // Salva i nuovi token e user aggiornato
-    await Future.wait([
-      localStorage.saveToken(authToken.accessToken),
-      localStorage.saveUser(authToken.user),
-      localStorage.saveRefreshToken(authToken.refreshToken),
-    ]);
-    
-    return authToken;
-  }
-
-  @override
   Future<void> logout() async {
     try {
       await remoteDataSource.logout();
@@ -58,7 +44,7 @@ class AuthRepositoryImpl implements AuthRepository {
     }
     
     // Se non c'è in cache, prova a recuperarlo dal server
-    if (await localStorage.hasToken) {
+    if (localStorage.hasToken) {
       final user = await remoteDataSource.getCurrentUser();
       await localStorage.saveUser(user);
       return user;
@@ -69,7 +55,7 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Future<bool> isAuthenticated() async {
-    if (!(await localStorage.isAuthenticated)) {
+    if (!(localStorage.isAuthenticated)) {
       return false;
     }
     
