@@ -23,6 +23,7 @@ class ProductDetailPage extends ConsumerWidget {
           slivers: [
             // App Bar con immagine
             SliverAppBar(
+              backgroundColor: Colors.white,
               expandedHeight: 300,
               pinned: true,
               flexibleSpace: FlexibleSpaceBar(
@@ -47,7 +48,7 @@ class ProductDetailPage extends ConsumerWidget {
                 icon: Container(
                   padding: EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.5),
+                    color: Colors.black.withValues(alpha: 0.5),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(Icons.arrow_back, color: Colors.white),

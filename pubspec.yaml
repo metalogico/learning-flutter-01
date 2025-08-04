@@ -43,10 +43,19 @@ dependencies:
 
   # Routing
   go_router: ^16.0.0
+
+  # JSON Serialization
   json_annotation: ^4.9.0
   freezed_annotation: ^3.1.0
+
+  # Storage
   shared_preferences: ^2.5.3
+
+  # Environment Variables
   flutter_dotenv: ^5.2.1
+
+  # UI
+  google_fonts: ^6.2.1
 
 dev_dependencies:
   flutter_test:
