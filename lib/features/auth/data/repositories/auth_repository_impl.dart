@@ -32,7 +32,10 @@ class AuthRepositoryImpl implements AuthRepository {
     } catch (e) {
       // Anche se il logout remoto fallisce, pulisci i dati locali
     } finally {
-      await _clearAllAuthData();
+      await Future.wait([
+        secureStorage.clearTokens(),
+        localStorage.clearUserData(),
+      ]);
     }
   }
 
@@ -54,7 +57,7 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Future<bool> isAuthenticated() async {
-    if (!await _hasCompleteAuthData()) {
+    if (!await secureStorage.hasTokens() && localStorage.hasUser) {
       return false;
     }
     
@@ -64,17 +67,5 @@ class AuthRepositoryImpl implements AuthRepository {
     } catch (e) {
       return false;
     }
-  }
-
-  // Helper methods privati
-  Future<bool> _hasCompleteAuthData() async {
-    return await secureStorage.hasTokens() && localStorage.hasUser;
-  }
-
-  Future<void> _clearAllAuthData() async {
-    await Future.wait([
-      secureStorage.clearTokens(),
-      localStorage.clearUserData(),
-    ]);
   }
 }
