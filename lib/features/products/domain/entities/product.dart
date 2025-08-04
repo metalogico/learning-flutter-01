@@ -7,7 +7,7 @@ part 'product.g.dart';
 abstract class Product with _$Product {
   const factory Product({
     required int id,
-    @JsonKey(name: 'title') required String name,
+    required String name,
     required double price,
     required double rating,
     required String description,

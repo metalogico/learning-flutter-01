@@ -17,7 +17,7 @@ class ProductsRemoteDataSourceImpl extends BaseRemoteDataSource
   @override
   Future<List<Product>> getProducts() async {
     return handleRequest(apiClient.get('/products'), (responseData) {
-      final items = responseData['products'] as List;
+      final items = responseData['data'] as List;
       return items
           .map((json) => Product.fromJson(json as Map<String, dynamic>))
           .toList();
