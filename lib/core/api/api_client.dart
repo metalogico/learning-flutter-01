@@ -1,10 +1,12 @@
 import 'package:dio/dio.dart';
 import '../../config/app_config.dart';
+import '../storage/local_storage.dart';
 
 class ApiClient {
   late Dio _dio;
+  final LocalStorage? _localStorage;
 
-  ApiClient() {
+  ApiClient([this._localStorage]) {
     _dio = Dio(BaseOptions(
       baseUrl: AppConfig.baseUrl,
       connectTimeout: Duration(milliseconds: AppConfig.connectTimeout),
@@ -25,6 +27,30 @@ class ApiClient {
         error: true,
       ));
     }
+
+    // Interceptor per gestione automatica del token
+    _dio.interceptors.add(InterceptorsWrapper(
+      onRequest: (options, handler) {
+        // Aggiungi automaticamente il Bearer token se disponibile
+        if (_localStorage != null) {
+          final token = _localStorage.getToken();
+          if (token != null) {
+            options.headers['Authorization'] = 'Bearer $token';
+          }
+        }
+        handler.next(options);
+      },
+      onError: (error, handler) {
+        // Gestione automatica degli errori di autenticazione
+        if (error.response?.statusCode == 401) {
+          // Token scaduto o non valido - pulisci i dati locali
+          _localStorage?.clearAuthData();
+          // Qui potresti anche triggerare un redirect al login
+          // ma per ora lasciamo che sia gestito a livello di UI
+        }
+        handler.next(error);
+      },
+    ));
   }
 
   Future<Response> get(String path, {Map<String, dynamic>? queryParameters}) {

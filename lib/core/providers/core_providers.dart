@@ -10,7 +10,8 @@ final sharedPreferencesProvider = Provider<SharedPreferences>((ref) {
 });
 
 final localStorageProvider = Provider<LocalStorage>((ref) {
-  return LocalStorage();
+  final sharedPrefs = ref.read(sharedPreferencesProvider);
+  return LocalStorage(sharedPrefs);
 });
 
 final apiClientProvider = Provider<ApiClient>((ref) {

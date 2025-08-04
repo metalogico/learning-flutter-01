@@ -4,10 +4,9 @@ class Routes {
   static const String productDetail = '/products/detail';
   static const String productForm = '/products/form';
 
-  // News
-  static const String news = '/news';
-  static const String newsDetail = '/news/detail';
-  static const String newsForm = '/news/form';
+  // Auth
+  static const String login = '/login';
+  static const String authTest = '/auth-test';
 
   // Home
   static const String home = '/';
